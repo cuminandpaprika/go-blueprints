@@ -15,9 +15,11 @@ type templateHandler struct {
 	templ    *template.Template
 }
 
-const templateDir string = "templates"
-const welcomeTemplate string = "chat.html"
-const hostNameAndPort string = ":8080"
+const (
+	templateDir     = "templates"
+	welcomeTemplate = "chat.html"
+	hostNameAndPort = ":8080"
+)
 
 // serveHTTP handles HTTP requests with lazy loading
 func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -30,6 +32,11 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	r := newRoom()
+	http.Handle("/room", r)
+	// get the room going
+	go r.run()
+
 	handler := templateHandler{filename: welcomeTemplate}
 	http.HandleFunc("/", handler.ServeHTTP)
 
