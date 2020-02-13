@@ -40,12 +40,13 @@ func main() {
 	flag.Parse()
 	r := newRoom()
 	r.tracer = trace.New(os.Stdout)
-	http.Handle("/room", r)
 	// get the room going
 	go r.run()
 
-	handler := templateHandler{filename: welcomeTemplate}
-	http.HandleFunc("/", handler.ServeHTTP)
+	http.Handle("/room", r)
+	http.Handle("/assets/", http.StripPrefix("/assets", http.FileServer(http.Dir("/path/to/assets/"))))
+	http.Handle("/login", &templateHandler{filename: "login.html"})
+	http.Handle("/chat", MustAuth(&templateHandler{filename: welcomeTemplate}))
 
 	log.Printf("Serving webpage on %s", *hostNameAndPort)
 	if err := http.ListenAndServe(*hostNameAndPort, nil); err != nil {
