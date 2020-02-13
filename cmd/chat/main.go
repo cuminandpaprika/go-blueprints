@@ -47,6 +47,7 @@ func main() {
 	http.Handle("/assets/", http.StripPrefix("/assets", http.FileServer(http.Dir("/path/to/assets/"))))
 	http.Handle("/login", &templateHandler{filename: "login.html"})
 	http.Handle("/chat", MustAuth(&templateHandler{filename: welcomeTemplate}))
+	http.HandleFunc("/auth/", loginHandler)
 
 	log.Printf("Serving webpage on %s", *hostNameAndPort)
 	if err := http.ListenAndServe(*hostNameAndPort, nil); err != nil {
