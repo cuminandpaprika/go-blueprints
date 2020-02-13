@@ -19,11 +19,10 @@ const templateDir string = "templates"
 const welcomeTemplate string = "chat.html"
 const hostNameAndPort string = ":8080"
 
-// serveHTTP handles HTTP requests
+// serveHTTP handles HTTP requests with lazy loading
 func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	t.once.Do(
 		func() {
-			log.Println(filepath.Join(templateDir, t.filename))
 			t.templ = template.Must(template.ParseFiles(filepath.Join(templateDir, t.filename)))
 
 		})
@@ -33,6 +32,7 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func main() {
 	handler := templateHandler{filename: welcomeTemplate}
 	http.HandleFunc("/", handler.ServeHTTP)
+
 	log.Printf("Serving webpage on %s", hostNameAndPort)
 	if err := http.ListenAndServe(hostNameAndPort, nil); err != nil {
 		log.Fatal(err)
