@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -28,10 +29,12 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			t.templ = template.Must(template.ParseFiles(filepath.Join(templateDir, t.filename)))
 
 		})
-	t.templ.Execute(w, nil)
+	t.templ.Execute(w, r)
 }
 
 func main() {
+	var hostNameAndPort = flag.String("addr", ":8080", "The addr of the  application.")
+	flag.Parse()
 	r := newRoom()
 	http.Handle("/room", r)
 	// get the room going
@@ -40,8 +43,8 @@ func main() {
 	handler := templateHandler{filename: welcomeTemplate}
 	http.HandleFunc("/", handler.ServeHTTP)
 
-	log.Printf("Serving webpage on %s", hostNameAndPort)
-	if err := http.ListenAndServe(hostNameAndPort, nil); err != nil {
+	log.Printf("Serving webpage on %s", *hostNameAndPort)
+	if err := http.ListenAndServe(*hostNameAndPort, nil); err != nil {
 		log.Fatal(err)
 	}
 
