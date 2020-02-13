@@ -5,6 +5,15 @@ import (
 	"io"
 )
 
+type nilTracer struct{}
+
+func (t *nilTracer) Trace(a ...interface{}) {}
+
+// Off returns a tracer that does nothing
+func Off() Tracer {
+	return &nilTracer{}
+}
+
 // tracer is the interface that describes an object
 // capable of tracing events through the code
 // The Tracer interface defines a function Trace that
