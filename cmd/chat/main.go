@@ -3,23 +3,36 @@ package main
 import (
 	"log"
 	"net/http"
+	"path/filepath"
+	"sync"
+	"text/template"
 )
 
-func handleWeb(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(` 
-	  <html> 
-		<head> 
-		  <title>Chat</title> 
-		</head> 
-		<body> 
-		  Let's chat! 
-		</body> 
-	  </html>`))
+// templateHandler represents a single template
+type templateHandler struct {
+	once     sync.Once
+	filename string
+	templ    *template.Template
+}
+
+const templateDir string = "templates"
+const welcomeTemplate string = "chat.html"
+const hostNameAndPort string = ":8080"
+
+// serveHTTP handles HTTP requests
+func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	t.once.Do(
+		func() {
+			log.Println(filepath.Join(templateDir, t.filename))
+			t.templ = template.Must(template.ParseFiles(filepath.Join(templateDir, t.filename)))
+
+		})
+	t.templ.Execute(w, nil)
 }
 
 func main() {
-	const hostNameAndPort string = ":8080"
-	http.HandleFunc("/", handleWeb)
+	handler := templateHandler{filename: welcomeTemplate}
+	http.HandleFunc("/", handler.ServeHTTP)
 	log.Printf("Serving webpage on %s", hostNameAndPort)
 	if err := http.ListenAndServe(hostNameAndPort, nil); err != nil {
 		log.Fatal(err)
